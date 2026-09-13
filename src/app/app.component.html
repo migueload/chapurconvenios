@@ -1,0 +1,906 @@
+<div
+  class="min-h-screen bg-slate-100 flex flex-col text-slate-800 selection:bg-red-500 selection:text-white">
+
+  <!-- ================= ENCABEZADO CORPORATIVO ================= -->
+  <header
+    class="bg-[#0f1115] text-white border-b border-neutral-800 shadow-md sticky top-0 z-30">
+    <div
+      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row items-center justify-between gap-4">
+
+      <!-- Logotipo e Identidad de Marca -->
+      <div class="flex items-center space-x-3.5">
+        <div
+          class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center shadow-md shadow-red-900/40 border border-red-500/30">
+          <span class="text-white font-black text-lg tracking-tighter">R<span
+              class="text-red-300">+</span>C</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span
+              class="text-xs font-bold uppercase tracking-widest text-red-500">Aplicacion</span>
+            <span
+              class="text-[10px] bg-neutral-800 text-neutral-300 px-2 py-0.5 rounded-full border border-neutral-700 font-mono">v1.0</span>
+          </div>
+          <h1 class="text-base sm:text-lg font-bold tracking-tight text-white">
+            Módulo de Creación de Convenios y Folios <span
+              class="text-red-500 font-extrabold">Red+Chapur</span>
+          </h1>
+        </div>
+      </div>
+
+      <!-- Indicadores y Acciones Superiores -->
+      <div
+        class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+        <div
+          class="flex items-center gap-2 bg-neutral-900/90 border border-neutral-800 px-3 py-1.5 rounded-lg text-xs">
+          <span class="relative flex h-2 w-2">
+            <span
+              class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span
+              class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+          </span>
+          <span class="text-neutral-300 font-medium">Modo Captura</span>
+        </div>
+
+        <button
+          (click)="toggleResumen()"
+          class="text-xs bg-neutral-900 hover:bg-neutral-800 text-neutral-200 hover:text-white px-3 py-1.5 rounded-lg border border-neutral-700 transition flex items-center gap-1.5 cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-red-400" fill="none"
+            stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round"
+              stroke-width="2"
+              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+          <span>{{ mostrarResumen() ? 'Ocultar Resumen' : 'Ver Datos Capturados'
+            }}</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= NOTIFICACIÓN TOAST ================= -->
+  @if (mensajeEjecucion()) {
+  <div
+    class="fixed top-18 right-4 sm:right-6 z-50 max-w-md w-full animate-bounce-short">
+    <div
+      [ngClass]="tipoMensaje() === 'success' ? 'border-emerald-500' : 'border-red-500'"
+      class="bg-neutral-900 text-white p-4 rounded-xl shadow-2xl border-l-4 flex items-start justify-between gap-3">
+      <div class="flex items-start gap-2.5">
+        <div
+          [ngClass]="tipoMensaje() === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'"
+          class="p-1 rounded-lg mt-0.5">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <h4
+            [ngClass]="tipoMensaje() === 'success' ? 'text-emerald-400' : 'text-red-400'"
+            class="text-xs font-semibold uppercase tracking-wider">
+            Notificación del Sistema
+          </h4>
+          <p class="text-sm text-neutral-200 mt-0.5">{{ mensajeEjecucion()
+            }}</p>
+        </div>
+      </div>
+      <button
+        (click)="cerrarNotificacion()"
+        class="text-neutral-400 hover:text-white p-1 rounded transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+  }
+
+  <!-- ================= CONTENEDOR PRINCIPAL ================= -->
+  <main
+    class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+
+    <!-- Tarjeta Principal con las 4 pestañas -->
+    <div
+      class="bg-white rounded-2xl shadow-xl shadow-slate-200/70 border border-slate-200 overflow-hidden">
+
+      <!-- ================= NAVEGACIÓN DE TABS ================= -->
+      <nav class="bg-neutral-900 p-2 sm:p-3 border-b border-neutral-800"
+        aria-label="Tabs del Módulo">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+
+          <!-- TAB 1: ID Y TOKEN -->
+          <button
+            type="button"
+            (click)="setTab(1)"
+            [ngClass]="getTabButtonClass(1)"
+            class="flex items-center gap-3 p-3 rounded-xl transition duration-200 text-left cursor-pointer border border-neutral-700/50">
+            <div
+              [ngClass]="getTabBadgeClass(1)"
+              class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 transition">
+              01
+            </div>
+            <div class="min-w-0">
+              <span
+                class="block text-xs uppercase tracking-wider opacity-80 font-medium">Paso
+                1</span>
+              <span class="block text-xs sm:text-sm font-semibold truncate">ID &
+                Token</span>
+            </div>
+          </button>
+
+          <!-- TAB 2: NOMBRE Y DESCRIPCIÓN -->
+          <button
+            type="button"
+            (click)="setTab(2)"
+            [ngClass]="getTabButtonClass(2)"
+            class="flex items-center gap-3 p-3 rounded-xl transition duration-200 text-left cursor-pointer border border-neutral-700/50">
+            <div
+              [ngClass]="getTabBadgeClass(2)"
+              class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 transition">
+              02
+            </div>
+            <div class="min-w-0">
+              <span
+                class="block text-xs uppercase tracking-wider opacity-80 font-medium">Paso
+                2</span>
+              <span
+                class="block text-xs sm:text-sm font-semibold truncate">Convenio</span>
+            </div>
+          </button>
+
+          <!-- TAB 3: PREFIJO Y NÚMERO DE FOLIOS -->
+          <button
+            type="button"
+            (click)="setTab(3)"
+            [ngClass]="getTabButtonClass(3)"
+            class="flex items-center gap-3 p-3 rounded-xl transition duration-200 text-left cursor-pointer border border-neutral-700/50">
+            <div
+              [ngClass]="getTabBadgeClass(3)"
+              class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 transition">
+              03
+            </div>
+            <div class="min-w-0">
+              <span
+                class="block text-xs uppercase tracking-wider opacity-80 font-medium">Paso
+                3</span>
+              <span
+                class="block text-xs sm:text-sm font-semibold truncate">Folios</span>
+            </div>
+          </button>
+
+          <!-- TAB 4: OFERTAS DINÁMICAS -->
+          <button
+            type="button"
+            (click)="setTab(4)"
+            [ngClass]="getTabButtonClass(4)"
+            class="flex items-center gap-3 p-3 rounded-xl transition duration-200 text-left cursor-pointer border border-neutral-700/50">
+            <div
+              [ngClass]="getTabBadgeClass(4)"
+              class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 transition">
+              04
+            </div>
+            <div class="min-w-0">
+              <span
+                class="block text-xs uppercase tracking-wider opacity-80 font-medium">Paso
+                4</span>
+              <span
+                class="block text-xs sm:text-sm font-semibold truncate">Ofertas
+                Dinámicas</span>
+            </div>
+          </button>
+
+        </div>
+      </nav>
+
+      <!-- ================= ÁREA DE CONTENIDO DE PESTAÑAS ================= -->
+      <div class="p-6 sm:p-8 lg:p-10">
+
+        <!-- ================= TAB 1: ID DEL CONVENIO Y TOKEN ================= -->
+        @if (activeTab() === 1) {
+        <div class="space-y-6">
+
+          <!-- Encabezado de la pestaña -->
+          <div class="border-b border-slate-200 pb-4">
+            <div class="flex items-center gap-2.5">
+              <span class="p-2 rounded-lg bg-red-100 text-red-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+              </span>
+              <div>
+                <h2
+                  class="text-lg sm:text-xl font-bold text-neutral-900">Autenticación
+                  e Identificación del Convenio</h2>
+                <p class="text-xs sm:text-sm text-slate-500">Ingrese el
+                  identificador principal y el token de acceso
+                  correspondientes.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulario Tab 1 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+
+            <!-- Caja de Texto: ID del Convenio -->
+            <div class="space-y-2">
+              <label for="idConvenio"
+                class="block text-sm font-semibold text-neutral-800">
+                ID del Convenio <span class="text-red-600">*</span>
+              </label>
+              <div class="relative rounded-xl shadow-sm">
+                <div
+                  class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                  </svg>
+                </div>
+                <input
+                  id="idConvenio"
+                  type="text"
+                  [ngModel]="idConvenio()"
+                  (ngModelChange)="idConvenio.set($event)"
+                  placeholder="Ej. 152"
+                  class="block w-full pl-11 pr-4 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600 sm:text-sm transition hover:border-slate-400" />
+              </div>
+              <p class="text-xs text-slate-500">Identificador del convenio.</p>
+            </div>
+
+            <!-- Caja de Texto: NUMIDEN del Usuario -->
+            <div class="space-y-2">
+              <label for="idConvenio"
+                class="block text-sm font-semibold text-neutral-800">
+                NUMIDEN del Usuario <span class="text-red-600">*</span>
+              </label>
+              <div class="relative rounded-xl shadow-sm">
+                <div
+                  class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                  </svg>
+                </div>
+                <input
+                  id="idUsuario"
+                  type="text"
+                  [ngModel]="idUsuario()"
+                  (ngModelChange)="idUsuario.set($event)"
+                  placeholder="Ej. 123456"
+                  class="block w-full pl-11 pr-4 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600 sm:text-sm transition hover:border-slate-400" />
+              </div>
+              <p class="text-xs text-slate-500">Número de identificación del
+                usuario que da de alta el convenio.</p>
+            </div>
+
+            <!-- Caja de Texto: Token -->
+            <div class="space-y-2">
+              <label for="token"
+                class="block text-sm font-semibold text-neutral-800">
+                Token <span class="text-red-600">*</span>
+              </label>
+              <div class="relative rounded-xl shadow-sm">
+                <div
+                  class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <input
+                  id="token"
+                  [type]="mostrarToken() ? 'text' : 'password'"
+                  [ngModel]="token()"
+                  (ngModelChange)="token.set($event)"
+                  placeholder="Ingrese el token de seguridad o clave API"
+                  class="block w-full pl-11 pr-11 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600 sm:text-sm font-mono transition hover:border-slate-400" />
+                <button
+                  type="button"
+                  (click)="toggleMostrarToken()"
+                  class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer">
+                  @if (mostrarToken()) {
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                  </svg>
+                  } @else {
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  }
+                </button>
+              </div>
+              <p class="text-xs text-slate-500">Token de autenticación
+                Red+Chapur.</p>
+            </div>
+
+          </div>
+
+          <!-- Navegación inferior Tab 1 -->
+          <div class="pt-6 border-t border-slate-100 flex justify-end">
+            <button
+              type="button"
+              (click)="setTab(2)"
+              class="bg-neutral-900 hover:bg-neutral-800 text-white px-5 py-2.5 rounded-xl font-medium text-sm flex items-center gap-2 transition cursor-pointer shadow-sm">
+              <span>Continuar a Datos del Convenio</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+        </div>
+        }
+
+        <!-- ================= TAB 2: NOMBRE, DESCRIPCIÓN Y BOTÓN EJECUTAR ================= -->
+        @if (activeTab() === 2) {
+        <div class="space-y-6">
+
+          <!-- Encabezado de la pestaña -->
+          <div class="border-b border-slate-200 pb-4">
+            <div class="flex items-center gap-2.5">
+              <span class="p-2 rounded-lg bg-red-100 text-red-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </span>
+              <div>
+                <h2
+                  class="text-lg sm:text-xl font-bold text-neutral-900">Descripción
+                  del Convenio</h2>
+                <p class="text-xs sm:text-sm text-slate-500">Capture la
+                  descripción correspondiente al convenio.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulario Tab 2 -->
+          <div class="space-y-5 pt-2">
+
+            <!-- Caja de Texto: Nombre del Convenio -->
+            <div class="space-y-2">
+              <label for="nombreConvenio"
+                class="block text-sm font-semibold text-neutral-800">
+                Nombre del Convenio <span class="text-red-600">*</span>
+              </label>
+              <div class="relative rounded-xl shadow-sm">
+                <div
+                  class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <input
+                  id="nombreConvenio"
+                  type="text"
+                  [ngModel]="nombreConvenio()"
+                  (ngModelChange)="nombreConvenio.set($event)"
+                  placeholder="Ej. Descuento Convenio Dunosusa"
+                  class="block w-full pl-11 pr-4 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600 sm:text-sm transition hover:border-slate-400" />
+              </div>
+            </div>
+
+            <!-- Caja de Texto: Descripción del Convenio -->
+            <div class="space-y-2">
+              <label for="descripcionConvenio"
+                class="block text-sm font-semibold text-neutral-800">
+                Descripción del Convenio <span class="text-red-600">*</span>
+              </label>
+              <div class="relative rounded-xl shadow-sm">
+                <textarea
+                  id="descripcionConvenio"
+                  rows="4"
+                  [ngModel]="descripcionConvenio()"
+                  (ngModelChange)="descripcionConvenio.set($event)"
+                  placeholder="Ingrese una descripción detallada del convenio..."
+                  class="block w-full p-3.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600 sm:text-sm transition hover:border-slate-400"></textarea>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Botonera Tab 2 con Botón "Ejecutar" -->
+          <div
+            class="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <button
+              type="button"
+              (click)="setTab(1)"
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium text-sm flex items-center justify-center gap-2 transition cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+              <span>Paso Anterior</span>
+            </button>
+
+            <div
+              class="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-3">
+              <!-- BOTÓN "EJECUTAR" TAB 2 -->
+              <button
+                type="button"
+                (click)="ejecutar('Tab 2: Datos del Convenio')"
+                [disabled]="cargando()"
+                class="w-full sm:w-auto bg-red-600 hover:bg-red-700 active:bg-red-800 text-white px-8 py-3 rounded-xl font-bold text-sm tracking-wide shadow-lg shadow-red-600/30 hover:shadow-red-600/50 flex items-center justify-center gap-2.5 transition transform active:scale-98 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                @if (cargando()) {
+                <svg class="w-5 h-5 animate-spin text-white" fill="none"
+                  viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10"
+                    stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8z"></path>
+                </svg>
+                <span>Enviando...</span>
+                } @else {
+                <svg class="w-5 h-5 text-white" fill="none"
+                  stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Ejecutar</span>
+                }
+              </button>
+
+              <button
+                type="button"
+                (click)="setTab(3)"
+                class="w-full sm:w-auto bg-neutral-900 hover:bg-neutral-800 text-white px-5 py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition cursor-pointer shadow-sm">
+                <span>Paso Siguiente</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+        }
+
+        <!-- ================= TAB 3: PREFIJO, NÚMERO DE FOLIOS Y BOTÓN EJECUTAR ================= -->
+        @if (activeTab() === 3) {
+        <div class="space-y-6">
+
+          <!-- Encabezado de la pestaña -->
+          <div class="border-b border-slate-200 pb-4">
+            <div class="flex items-center gap-2.5">
+              <span class="p-2 rounded-lg bg-red-100 text-red-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                </svg>
+              </span>
+              <div>
+                <h2
+                  class="text-lg sm:text-xl font-bold text-neutral-900">Configuración
+                  y Cantidad de Folios</h2>
+                <p class="text-xs sm:text-sm text-slate-500">Especifique el
+                  prefijo identificador y el total de folios que serán
+                  creados.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulario Tab 3 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+
+            <!-- Caja de Texto: Prefijo del Convenio -->
+            <div class="space-y-2">
+              <label for="prefijoConvenio"
+                class="block text-sm font-semibold text-neutral-800">
+                Prefijo del Convenio <span class="text-red-600">*</span>
+              </label>
+              <div class="relative rounded-xl shadow-sm">
+                <div
+                  class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                </div>
+                <input
+                  id="prefijoConvenio"
+                  type="text"
+                  [ngModel]="prefijoConvenio()"
+                  (ngModelChange)="prefijoConvenio.set($event)"
+                  placeholder="Ej. DNS"
+                  class="block w-full pl-11 pr-4 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600 sm:text-sm font-semibold uppercase tracking-wider transition hover:border-slate-400" />
+              </div>
+              <p class="text-xs text-slate-500">Prefijo inicial para la
+                codificación consecutiva de los folios.</p>
+            </div>
+
+            <!-- Caja de Texto: Número de Folios -->
+            <div class="space-y-2">
+              <label for="numeroFolios"
+                class="block text-sm font-semibold text-neutral-800">
+                Número de Folios <span class="text-red-600">*</span>
+              </label>
+              <div class="relative rounded-xl shadow-sm">
+                <div
+                  class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <input
+                  id="numeroFolios"
+                  type="number"
+                  min="1"
+                  [ngModel]="numeroFolios()"
+                  (ngModelChange)="numeroFolios.set($event)"
+                  placeholder="Ej. 1000"
+                  class="block w-full pl-11 pr-4 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600 sm:text-sm font-mono transition hover:border-slate-400" />
+              </div>
+              <p class="text-xs text-slate-500">Cantidad numérica de folios a
+                emitir en esta tanda.</p>
+            </div>
+
+          </div>
+
+          <!-- Botonera Tab 3 con Botón "Ejecutar" -->
+          <div
+            class="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <button
+              type="button"
+              (click)="setTab(2)"
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium text-sm flex items-center justify-center gap-2 transition cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+              <span>Paso Anterior</span>
+            </button>
+
+            <div
+              class="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-3">
+              <!-- BOTÓN "EJECUTAR" TAB 3 -->
+              <button
+                type="button"
+                (click)="ejecutar('Tab 3: Configuración de Folios')"
+                class="w-full sm:w-auto bg-red-600 hover:bg-red-700 active:bg-red-800 text-white px-8 py-3 rounded-xl font-bold text-sm tracking-wide shadow-lg shadow-red-600/30 hover:shadow-red-600/50 flex items-center justify-center gap-2.5 transition transform active:scale-98 cursor-pointer">
+                <svg class="w-5 h-5 text-white" fill="none"
+                  stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Ejecutar</span>
+              </button>
+
+              <button
+                type="button"
+                (click)="setTab(4)"
+                class="w-full sm:w-auto bg-neutral-900 hover:bg-neutral-800 text-white px-5 py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition cursor-pointer shadow-sm">
+                <span>Paso Siguiente</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+        }
+
+        <!-- ================= TAB 4: CAJAS DINÁMICAS ID OFERTA, BOTÓN ADICIONAR, BOTÓN QUITAR, BOTÓN EJECUTAR ================= -->
+        @if (activeTab() === 4) {
+        <div class="space-y-6">
+
+          <!-- Encabezado de la pestaña -->
+          <div class="border-b border-slate-200 pb-4">
+            <div
+              class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="flex items-center gap-2.5">
+                <span class="p-2 rounded-lg bg-red-100 text-red-600">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                </span>
+                <div>
+                  <h2
+                    class="text-lg sm:text-xl font-bold text-neutral-900">Vinculación
+                    de Ofertas con el Convenio</h2>
+                  <p class="text-xs sm:text-sm text-slate-500">Agregue o retire
+                    cajas de texto para los identificadores de oferta (mínimo 1
+                    requerida).</p>
+                </div>
+              </div>
+
+              <!-- Contador de ofertas -->
+              <div
+                class="flex items-center self-start sm:self-center gap-2 bg-slate-100 px-3.5 py-1.5 rounded-full border border-slate-200">
+                <span class="text-xs font-semibold text-slate-600">Total de
+                  cajas:</span>
+                <span
+                  class="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{
+                  ofertas().length }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Barra de Acciones Dinámicas: Botón Adicionar y Botón Quitar -->
+          <div
+            class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 flex flex-wrap items-center justify-between gap-3">
+            <div class="text-xs text-slate-600 flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-red-500" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Gestione la cantidad Ofertas que desea vincular con el
+                Convenio.</span>
+            </div>
+
+            <div class="flex items-center gap-2.5 w-full sm:w-auto">
+
+              <!-- BOTÓN ADICIONAR (Crea cajas adicionales de manera vertical una debajo de otra) -->
+              <button
+                type="button"
+                (click)="adicionarOferta()"
+                class="flex-1 sm:flex-initial bg-neutral-900 hover:bg-neutral-800 active:bg-black text-white px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 transition shadow-sm border border-neutral-950 cursor-pointer">
+                <svg class="w-4 h-4 text-red-400" fill="none"
+                  stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Adicionar</span>
+              </button>
+
+              <!-- BOTÓN QUITAR (Podrá quitar una caja a la vez, deberá tener mínimo una caja) -->
+              <button
+                type="button"
+                (click)="quitarOferta()"
+                [disabled]="ofertas().length <= 1"
+                [ngClass]="ofertas().length <= 1 ? 'opacity-40 cursor-not-allowed border-slate-200 text-slate-400' : 'hover:bg-red-50 border-red-300 text-red-600'"
+                class="flex-1 sm:flex-initial bg-white border px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 transition shadow-sm cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2" d="M20 12H4" />
+                </svg>
+                <span>Quitar</span>
+              </button>
+
+            </div>
+          </div>
+
+          <!-- Listado Vertical de Cajas de Texto Dinámicas: Id Oferta (una debajo de otra) -->
+          <div class="space-y-3 pt-2">
+            @for (item of ofertas(); track item.id; let idx = $index) {
+            <div
+              class="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all flex flex-col sm:flex-row items-start sm:items-center gap-3">
+
+              <!-- Etiqueta con número de orden -->
+              <div class="flex items-center gap-2 min-w-32">
+                <span
+                  class="w-6 h-6 rounded-md bg-neutral-900 text-white font-mono text-xs flex items-center justify-center font-bold">
+                  {{ idx + 1 }}
+                </span>
+                <label [for]="'oferta_' + item.id"
+                  class="text-xs sm:text-sm font-semibold text-neutral-800 cursor-pointer">
+                  Id Oferta {{ idx + 1 }}
+                </label>
+              </div>
+
+              <!-- Caja de texto dinámica -->
+              <div class="relative flex-1 w-full">
+                <div
+                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                </div>
+                <input
+                  [id]="'oferta_' + item.id"
+                  type="text"
+                  [ngModel]="item.valor"
+                  (ngModelChange)="actualizarOferta(idx, $event)"
+                  [placeholder]="'Ingrese el ID de la oferta ej. 6540' + (idx + 1) + ')'"
+                  class="block w-full pl-9 pr-4 py-2.5 bg-slate-50/50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600 sm:text-sm transition font-mono" />
+              </div>
+
+              <!-- Botón Quitar por fila individual (solo habilitado si hay más de 1 caja) -->
+              <button
+                type="button"
+                (click)="quitarOferta(idx)"
+                [disabled]="ofertas().length <= 1"
+                [title]="ofertas().length <= 1 ? 'Mínimo se requiere una caja' : 'Quitar esta caja'"
+                class="self-end sm:self-center text-xs text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg border border-red-200 transition flex items-center gap-1 cursor-pointer disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span class="sm:hidden text-xs">Quitar</span>
+              </button>
+
+            </div>
+            }
+          </div>
+
+          <!-- Botonera Tab 4 con un solo botón "Ejecutar" -->
+          <div
+            class="pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <button
+              type="button"
+              (click)="setTab(3)"
+              class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium text-sm flex items-center justify-center gap-2 transition cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+              <span>Paso Anterior</span>
+            </button>
+
+            <!-- UN SOLO BOTÓN "EJECUTAR" (Requisito: "y tambien un solo boton “Ejecutar”") -->
+            <button
+              type="button"
+              (click)="ejecutar('Tab 4: Ofertas Dinámicas')"
+              class="w-full sm:w-auto bg-red-600 hover:bg-red-700 active:bg-red-800 text-white px-10 py-3 rounded-xl font-bold text-base tracking-wide shadow-lg shadow-red-600/30 hover:shadow-red-600/50 flex items-center justify-center gap-3 transition transform active:scale-98 cursor-pointer">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Ejecutar</span>
+            </button>
+          </div>
+
+        </div>
+        }
+
+      </div>
+
+    </div>
+
+    <!-- ================= PANEL COLAPSABLE: RESUMEN DE DATOS CAPTURADOS ================= -->
+    @if (mostrarResumen()) {
+    <div
+      class="mt-6 bg-neutral-900 text-white rounded-2xl p-5 sm:p-6 border border-neutral-800 shadow-xl">
+      <div
+        class="flex items-center justify-between border-b border-neutral-800 pb-3 mb-4">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+          <h3
+            class="text-sm font-bold uppercase tracking-wider text-white">Inspector
+            de Datos Capturados en Pantalla</h3>
+        </div>
+        <button
+          (click)="toggleResumen()"
+          class="text-neutral-400 hover:text-white text-xs cursor-pointer">
+          Cerrar [×]
+        </button>
+      </div>
+
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-mono">
+
+        <!-- Resumen Tab 1 -->
+        <div class="bg-neutral-950/80 p-3 rounded-xl border border-neutral-800">
+          <span class="text-red-400 font-bold block mb-1">Tab 1:
+            Identificación</span>
+          <div class="text-neutral-300">ID Convenio: <span
+              class="text-white font-semibold">{{ idConvenio() || '(vacío)'
+              }}</span></div>
+          <div class="text-neutral-300 mt-1 truncate">Token: <span
+              class="text-white font-semibold">{{ token() ? '•••••••• (' +
+              token().length + ' chars)' : '(vacío)' }}</span></div>
+        </div>
+
+        <!-- Resumen Tab 2 -->
+        <div class="bg-neutral-950/80 p-3 rounded-xl border border-neutral-800">
+          <span class="text-red-400 font-bold block mb-1">Tab 2: Convenio</span>
+          <div class="text-neutral-300 truncate">Nombre: <span
+              class="text-white font-semibold">{{ nombreConvenio() || '(vacío)'
+              }}</span></div>
+          <div class="text-neutral-300 mt-1 truncate">Descripción: <span
+              class="text-white font-semibold">{{ descripcionConvenio() ||
+              '(vacío)' }}</span></div>
+        </div>
+
+        <!-- Resumen Tab 3 -->
+        <div class="bg-neutral-950/80 p-3 rounded-xl border border-neutral-800">
+          <span class="text-red-400 font-bold block mb-1">Tab 3: Folios</span>
+          <div class="text-neutral-300">Prefijo: <span
+              class="text-white font-semibold">{{ prefijoConvenio() || '(vacío)'
+              }}</span></div>
+          <div class="text-neutral-300 mt-1">Nº Folios: <span
+              class="text-white font-semibold">{{ numeroFolios() || '(vacío)'
+              }}</span></div>
+        </div>
+
+        <!-- Resumen Tab 4 -->
+        <div class="bg-neutral-950/80 p-3 rounded-xl border border-neutral-800">
+          <span class="text-red-400 font-bold block mb-1">Tab 4: Ofertas ({{
+            ofertas().length }})</span>
+          <div class="space-y-0.5 max-h-24 overflow-y-auto pr-1">
+            @for (item of ofertas(); track item.id; let i = $index) {
+            <div class="text-neutral-300 truncate">#{{ i + 1 }}: <span
+                class="text-white font-semibold">{{ item.valor || '(vacío)'
+                }}</span></div>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+    }
+
+  </main>
+
+  <!-- ================= PIE DE PÁGINA CORPORATIVO ================= -->
+  <footer
+    class="bg-[#0f1115] text-neutral-400 border-t border-neutral-800 py-4 px-4 text-center text-xs mt-auto">
+    <div
+      class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-red-600"></span>
+        <span class="text-neutral-300 font-medium">Red+Chapur</span>
+        <span>• Sistema de Creación de Convenios y Folios</span>
+      </div>
+      <div class="text-neutral-500">
+        Componentes Standalone • Angular 19 • Tailwind CSS
+      </div>
+    </div>
+  </footer>
+
+</div>
